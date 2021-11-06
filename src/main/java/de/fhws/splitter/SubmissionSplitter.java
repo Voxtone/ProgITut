@@ -67,7 +67,7 @@ public class SubmissionSplitter {
     }
 
     /**
-     * splits the submissions in the specified output directory into the
+     * splits the submissions in the specified output directory
      */
     public void split() {
         List<File> allFiles = Arrays.stream(submissions.listFiles()).collect(Collectors.toList());
@@ -75,11 +75,18 @@ public class SubmissionSplitter {
         int overhead = (fileCount - summedAmount) / amountMap.size();
         int remainder = (fileCount - summedAmount) % amountMap.size();
         for (String name : amountMap.keySet()) {
-            for (int i = 0; i < amountMap.get(name) + overhead; i++) {
+            int assignedSubmissions = amountMap.get(name) + overhead;
+            if(remainder < 0) {
+                assignedSubmissions--;
+                remainder++;
+            }
+            else if(remainder > 0) {
+                assignedSubmissions++;
+                remainder--;
+            }
+            for (int i = 0; i < assignedSubmissions; i++) {
                 giveFileTo(name, allFiles.remove(0));
             }
-            if (remainder-- > 0)
-                giveFileTo(name, allFiles.remove(0));
         }
 
         printSplit(fileCount);
@@ -94,8 +101,8 @@ public class SubmissionSplitter {
         System.out.println("Total submissions: " + total);
         for (String name : fileMap.keySet()) {
             int assigned = fileMap.get(name).size();
-            int diff = amountMap.get(name) - assigned;
-            System.out.println(name + (name.length() < 4 ? "\t" : "") + "\t\t assigned submissions: " + assigned
+            int diff = assigned - amountMap.get(name);
+            System.out.println(name + (name.length() < 4 ? "\t" : "") + (name.length() < 8 ? "\t" : "") + "\tassigned submissions: " + assigned
                     + "; Difference to determined amount: " + (diff > 0 ? "+" : "") + diff);
         }
     }
@@ -119,6 +126,9 @@ public class SubmissionSplitter {
         }
     }
 
+    private String extractName(File f) {
+        return f.getName().replaceFirst("_assignsubmission_file_", "").replaceFirst(" ", "_");
+    }
 
     private void extractArchiveTo(File source, File dest) {
         try {
@@ -150,16 +160,12 @@ public class SubmissionSplitter {
         }
     }
 
-    private String extractName(File f) {
-        return f.getName().replaceFirst("_assignsubmission_file_", "").replaceFirst(" ", "_");
-    }
-
     public static void main(String args[]) {
         Map<String, Integer> amountMap = new HashMap<>();
         amountMap.put("TOM", TOM_AMOUNT);
         amountMap.put("DAVE", DAVE_AMOUNT);
-        //amountMap.put("NICOLAS", NICOLAS_AMOUNT);
-        //amountMap.put("JOHANNES", JOHANNES_AMOUNT);
+        amountMap.put("NICOLAS", NICOLAS_AMOUNT);
+        amountMap.put("JOHANNES", JOHANNES_AMOUNT);
         SubmissionSplitter splitter = new SubmissionSplitter(amountMap, SUBMISSIONS_PATH, OUTPUT_PATH);
         splitter.split();
     }
