@@ -25,6 +25,13 @@ public class JSONHandler {
                 "passed: \t\t\t" + sub.getBoolean("passed") + "\n}";
     }
 
+    public static String submissionObjToComment(JSONObject sub) {
+        String comment = sub.getString("commentary");
+        return sub.getString("firstname") + " " + sub.getString("lastname") + " " + sub.getInt("matNum") + " " +
+                (sub.getBoolean("passed") ? "passed" : "!NOT PASSED!") +
+                "\n" + (comment.equals("") ? "-/-" : comment);
+    }
+
     public static JSONObject load(File path) {
         if(!path.isFile())
             throw new IllegalArgumentException("file is a directory");

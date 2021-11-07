@@ -109,6 +109,7 @@ public class SubmissionTester {
                 "pass \t\t\t\t\t\t marks as passed\n" +
                 "unpass \t\t\t\t\t\t marks as not passed\n" +
                 "comment <commentary> \t\t adds a comment and marks as checked\n" +
+                "commentary \t\t\t\t\t lists all comments (in order to copy paste)\n" +
                 "exit \t\t\t\t\t\t saves and exits\n" +
                 "help \t\t\t\t\t\t displays this page";
         System.out.println(s);
@@ -193,6 +194,10 @@ public class SubmissionTester {
             comment(command.replaceFirst("comment ", ""));
             setChecked(true);
             printInfo();
+            return true;
+        }
+        else if(command.startsWith("commentary")) {
+            commentary();
             return true;
         }
         else if(command.startsWith("exit")) {
@@ -309,6 +314,12 @@ public class SubmissionTester {
 
     private void comment(String commentary) {
         json.put(curr, json.getJSONObject(curr).put("commentary", commentary));
+    }
+
+    private void commentary() {
+        for(int i = 0; i < json.length(); i++) {
+            System.out.println(JSONHandler.submissionObjToComment(json.getJSONObject(i)) + "\n");
+        }
     }
 
     public static void main(String[] args) {
