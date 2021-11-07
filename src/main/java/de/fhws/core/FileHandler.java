@@ -7,6 +7,12 @@ import java.util.List;
 
 public class FileHandler {
 
+    public static void createDirectory(File dir) {
+        if(!dir.exists())
+            createDirectory(dir.getParentFile());
+        dir.mkdir();
+    }
+
     public static boolean recursiveDelete(File file) {
         if(file.isDirectory()) {
             for(File f : file.listFiles())
@@ -22,14 +28,13 @@ public class FileHandler {
     }
 
     private static void recursiveSearch(File file, FileFilter fileFilter, List<File> list) {
+        if(fileFilter.accept(file))
+            list.add(file);
+
         if(file.isDirectory()) {
             for (File f : file.listFiles()) {
-                recursiveSearch(file, fileFilter, list);
+                recursiveSearch(f, fileFilter, list);
             }
-        }
-        else {
-            if(fileFilter.accept(file))
-                list.add(file);
         }
     }
 }
