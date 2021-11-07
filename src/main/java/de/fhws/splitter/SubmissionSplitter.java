@@ -10,7 +10,7 @@ import de.fhws.core.FileHandler;
 import de.fhws.excpetions.MultipleFilesContainedException;
 import de.fhws.excpetions.NoFileContainedException;
 import de.fhws.excpetions.NotADirectoryException;
-import de.fhws.excpetions.NotAnArchiveException;
+import de.fhws.excpetions.InvalidArchiveException;
 import org.rauschig.jarchivelib.Archiver;
 import org.rauschig.jarchivelib.ArchiverFactory;
 
@@ -139,16 +139,16 @@ public class SubmissionSplitter {
                 source.renameTo(new File(path));
             }
             else
-                throw new NotAnArchiveException(source.getName());
+                throw new InvalidArchiveException(source.getName());
 
             archiver.extract(source, dest);
         } catch (ZipException e) {
             try {
-                throw new NotAnArchiveException(source.getPath());
-            } catch (NotAnArchiveException notAnArchiveException) {
-                notAnArchiveException.printStackTrace();
+                throw new InvalidArchiveException(source.getPath());
+            } catch (InvalidArchiveException invalidArchiveException) {
+                invalidArchiveException.printStackTrace();
             }
-        } catch (NotAnArchiveException | IOException e) {
+        } catch (InvalidArchiveException | IOException e) {
             e.printStackTrace();
         }
     }
