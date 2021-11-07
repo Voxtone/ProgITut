@@ -6,6 +6,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.zip.ZipException;
 
+import de.fhws.core.FileHandler;
 import de.fhws.excpetions.MultipleFilesContainedException;
 import de.fhws.excpetions.NoFileContainedException;
 import de.fhws.excpetions.NotADirectoryException;
@@ -54,16 +55,8 @@ public class SubmissionSplitter {
         submissions = new File(submissionsPath);
         outputDir = new File(outputPath);
         for(File f : outputDir.listFiles())
-            recursiveDelete(f);
+            FileHandler.recursiveDelete(f);
 
-    }
-
-    private boolean recursiveDelete(File file) {
-        if(file.isDirectory()) {
-            for(File f : file.listFiles())
-                recursiveDelete(f);
-        }
-        return file.delete();
     }
 
     /**
