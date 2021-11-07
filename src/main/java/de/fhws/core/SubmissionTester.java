@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
@@ -76,7 +77,7 @@ public class SubmissionTester {
 
     private void printInfo() {
         StringBuilder builder = new StringBuilder();
-        builder.append("current index: ").append(curr).append(" of ").append(json.length()).append("\n");
+        builder.append("current index: ").append(curr).append(" of ").append(json.length() - 1).append("\n");
         if(curr < 0)
             builder.append("index must be at least 0");
         else if(curr >= json.length())
@@ -94,21 +95,22 @@ public class SubmissionTester {
 
     private void printHelpPage() {
         String s = "commands: \n" +
-                "info \t\t\t\t\t displays info of current submission\n" +
-                "all \t\t\t\t\t prints all submission entries\n" +
-                "save \t\t\t\t\t saves all submissions\n" +
-                "curr <index> \t\t\t jumps to the submission with specified index\n" +
+                "info \t\t\t\t\t\t displays info of current submission\n" +
+                "all \t\t\t\t\t\t prints all submission entries\n" +
+                "save \t\t\t\t\t\t saves all submissions\n" +
+                "curr <index> \t\t\t\t jumps to the submission with specified index\n" +
                 "next [-u | -l] \t\t\t\t saves current submission and jumps to the next; if -u next unchecked; if -l with load\n" +
-                "search <matNum | lastname> \t\t\t\t searches for first occurrence of submission belonging to the specified student\n" +
-                "load \t\t\t\t\t loads all .java files into working directory for execution\n" +
-                "ls \t\t\t\t shows all loaded .java files" +
-                "check \t\t\t\t\t marks as checked\n" +
-                "uncheck \t\t\t\t marks as unchecked\n" +
-                "pass \t\t\t\t\t marks as passed\n" +
-                "unpass \t\t\t\t\t marks as not passed\n" +
-                "comment <commentary> \t adds a comment and marks as checked\n" +
-                "exit \t\t\t\t\t saves and exits\n" +
-                "help \t\t\t\t\t displays this page";
+                "search <matNum | lastname> \t searches for first occurrence of submission belonging to the specified student\n" +
+                "load \t\t\t\t\t\t loads all .java files into working directory for execution\n" +
+                "ls \t\t\t\t\t\t\t shows all loaded .java files\n" +
+                "java <filename> \t\t\t\t executes the given .java file\n" +
+                "check \t\t\t\t\t\t marks as checked\n" +
+                "uncheck \t\t\t\t\t marks as unchecked\n" +
+                "pass \t\t\t\t\t\t marks as passed\n" +
+                "unpass \t\t\t\t\t\t marks as not passed\n" +
+                "comment <commentary> \t\t adds a comment and marks as checked\n" +
+                "exit \t\t\t\t\t\t saves and exits\n" +
+                "help \t\t\t\t\t\t displays this page";
         System.out.println(s);
     }
 
@@ -133,7 +135,7 @@ public class SubmissionTester {
         }
         else if(command.startsWith("next")) {
             save();
-            if(command.contains("-n")) {
+            if(command.contains("-u")) {
                 advanceNextUnchecked();
             }
             else if(command.contains("-l")) {
@@ -161,6 +163,10 @@ public class SubmissionTester {
         }
         else if(command.startsWith("ls")) {
             printWorkspace();
+            return true;
+        }
+        else if(command.startsWith("java ")) {
+            execJava(command.replaceFirst("java ", ""));
             return true;
         }
         else if(command.startsWith("check")) {
@@ -207,7 +213,10 @@ public class SubmissionTester {
     }
 
     private void setCurr(int index) {
-        curr = index;
+        if(index >= 0 && index < json.length())
+            curr = index;
+        else
+            System.out.println("index not in range!");
     }
 
     /**
@@ -215,14 +224,15 @@ public class SubmissionTester {
      * @return {@code true} if there is a next element {@code false} otherwise
      */
     private boolean next() {
-        curr++;
-        return curr >= json.length();
+        boolean isNext = curr < json.length() - 1;
+        setCurr(curr + 1);
+        return isNext;
     }
 
     private void advanceNextUnchecked() {
         boolean checked = true;
         while (next() && checked) {
-            checked = json.getBoolean(curr);
+            checked = json.getJSONObject(curr).getBoolean("checked");
         }
     }
 
@@ -258,7 +268,6 @@ public class SubmissionTester {
         // potentially throws an exception if curr is out of bounds; error handling not supported yet TODO
         File currentDir = submissions.listFiles(path -> path.getName().contains(String.valueOf(matNum)))[0];
         List<File> javaFiles = FileHandler.recursiveSearch(currentDir, path -> path.getName().endsWith(".java"));
-
         for(File f : javaFiles) {
             File dest = new File(workingDir + "/" + currentDir.toPath().relativize(f.toPath()).toString());
             FileHandler.createDirectory(dest.getParentFile());
@@ -277,6 +286,17 @@ public class SubmissionTester {
         for(File f : FileHandler.recursiveSearch(workingDir, path -> path.getName().endsWith(".java"))) {
             System.out.println(workingDir.toPath().relativize(f.toPath()));
         }
+    }
+
+    private void execJava(String filename) {
+        List<File> javaFiles = FileHandler.recursiveSearch(workingDir, path -> path.getName().endsWith(".java"));
+        if(javaFiles.isEmpty())
+            System.out.println("Nothing to execute");
+        else {
+            // TODO implement
+            throw new UnsupportedOperationException();
+        }
+
     }
 
     private void setChecked(boolean checked) {
