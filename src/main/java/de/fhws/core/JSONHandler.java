@@ -7,14 +7,14 @@ import java.io.*;
 public class JSONHandler {
 
     public static JSONObject createSubmissionObj(int matNum, String firstname, String lastname) {
-        JSONObject student = new JSONObject();
-        student.put("matNum", matNum);
-        student.put("firstname", firstname);
-        student.put("lastname", lastname);
-        student.put("checked", false);
-        student.put("commentary", "");
-        student.put("passed", false);
-        return student;
+        JSONObject sub = new JSONObject();
+        sub.put("matNum", matNum);
+        sub.put("firstname", firstname);
+        sub.put("lastname", lastname);
+        sub.put("checked", false);
+        sub.put("commentary", "");
+        sub.put("passed", false);
+        return sub;
     }
 
     public static String submissionObjToString(JSONObject sub) {

@@ -14,7 +14,6 @@ import de.fhws.excpetions.InvalidArchiveException;
 import org.rauschig.jarchivelib.Archiver;
 import org.rauschig.jarchivelib.ArchiverFactory;
 
-// TODO check all amount cases
 
 
 public class SubmissionSplitter {
@@ -130,14 +129,8 @@ public class SubmissionSplitter {
                 archiver = zip;
             else if(source.getName().endsWith(".tar"))
                 archiver = tar;
-            else if(source.getName().endsWith(".tar.gz"))
+            else if(source.getName().endsWith(".tar.gz") || source.getName().endsWith(".tgz"))
                 archiver = targz;
-            else if(source.getName().endsWith(".tgz")) {
-                archiver = targz;
-                String path = source.getPath();
-                path.substring(0, path.length()-4).concat(".tar.gz");
-                source.renameTo(new File(path));
-            }
             else
                 throw new InvalidArchiveException(source.getName());
 
@@ -153,7 +146,7 @@ public class SubmissionSplitter {
         }
     }
 
-    public static void main(String args[]) {
+    public static void main(String[] args) {
         Map<String, Integer> amountMap = new HashMap<>();
         amountMap.put("TOM", TOM_AMOUNT);
         amountMap.put("DAVE", DAVE_AMOUNT);

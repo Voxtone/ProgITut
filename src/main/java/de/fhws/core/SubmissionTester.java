@@ -7,13 +7,12 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-// TODO implement execute command (only if loaded successfully)
+
 
 public class SubmissionTester {
 
@@ -51,7 +50,7 @@ public class SubmissionTester {
     }
 
     private void initJson() {
-        List<File> allFiles = Arrays.asList(submissions.listFiles());
+        File[] allFiles = submissions.listFiles();
         for(File f : allFiles) {
             String[] parts = f.getName().split("_");
             JSONObject student = JSONHandler.createSubmissionObj(Integer.parseInt(parts[2]), parts[0], parts[1]);
@@ -95,24 +94,25 @@ public class SubmissionTester {
     }
 
     private void printHelpPage() {
-        String s = "commands: \n" +
-                "info \t\t\t\t\t\t displays info of current submission\n" +
-                "all \t\t\t\t\t\t prints all submission entries\n" +
-                "save \t\t\t\t\t\t saves all submissions\n" +
-                "curr <index> \t\t\t\t jumps to the submission with specified index\n" +
-                "next [-u | -l] \t\t\t\t saves current submission and jumps to the next; if -u next unchecked; if -l with load\n" +
-                "search <matNum | lastname> \t searches for first occurrence of submission belonging to the specified student\n" +
-                "load \t\t\t\t\t\t loads all .java files into working directory for execution\n" +
-                "ls \t\t\t\t\t\t\t shows all loaded .java files\n" +
-                "java <filename> \t\t\t executes the given .java file; if -n then a new cmd window will be opened (needed for input)\n" +
-                "check \t\t\t\t\t\t marks as checked\n" +
-                "uncheck \t\t\t\t\t marks as unchecked\n" +
-                "pass \t\t\t\t\t\t marks as passed\n" +
-                "unpass \t\t\t\t\t\t marks as not passed\n" +
-                "comment <commentary> \t\t adds a comment and marks as checked\n" +
-                "commentary \t\t\t\t\t lists all comments (in order to copy paste)\n" +
-                "exit \t\t\t\t\t\t saves and exits\n" +
-                "help \t\t\t\t\t\t displays this page";
+        String s = """
+                commands:\s
+                info \t\t\t\t\t\t displays info of current submission
+                all \t\t\t\t\t\t prints all submission entries
+                save \t\t\t\t\t\t saves all submissions
+                curr <index> \t\t\t\t jumps to the submission with specified index
+                next [-u | -l] \t\t\t\t saves current submission and jumps to the next; if -u next unchecked; if -l with load
+                search <matNum | lastname> \t searches for first occurrence of submission belonging to the specified student
+                load \t\t\t\t\t\t loads all .java files into working directory for execution
+                ls \t\t\t\t\t\t\t shows all loaded .java files
+                java <filename> \t\t\t executes the given .java file; if -n then a new cmd window will be opened (needed for input)
+                check \t\t\t\t\t\t marks as checked
+                uncheck \t\t\t\t\t marks as unchecked
+                pass \t\t\t\t\t\t marks as passed
+                unpass \t\t\t\t\t\t marks as not passed
+                comment <commentary> \t\t adds a comment and marks as checked
+                commentary \t\t\t\t\t lists all comments (in order to copy paste)
+                exit \t\t\t\t\t\t saves and exits
+                help \t\t\t\t\t\t displays this page""";
         System.out.println(s);
     }
 
@@ -141,7 +141,7 @@ public class SubmissionTester {
                 advanceNextUnchecked();
             }
             else if(command.contains("-l")) {
-                if(next());
+                if(next())
                     load();
             }
             else {
@@ -218,7 +218,8 @@ public class SubmissionTester {
     private void save() {
         JSONObject mainObj = new JSONObject();
         mainObj.put("submissions", json);
-        JSONHandler.save(jsonFile, mainObj);
+        if(!JSONHandler.save(jsonFile, mainObj))
+            System.out.println("failed to save data");
     }
 
     private void setCurr(int index) {
