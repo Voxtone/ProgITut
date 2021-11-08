@@ -7,10 +7,10 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
+import java.util.concurrent.Executors;
 
 // TODO implement execute command (only if loaded successfully)
 
@@ -167,7 +167,10 @@ public class SubmissionTester {
             return true;
         }
         else if(command.startsWith("java ")) {
-            execJava(command.replaceFirst("java ", ""));
+            if(command.replaceFirst("java ", "").startsWith("-n "))
+                execJava(command.replaceFirst("java -n ", ""), true);
+            else
+                execJava(command.replaceFirst("java ", ""), false);
             return true;
         }
         else if(command.startsWith("check")) {
@@ -293,15 +296,69 @@ public class SubmissionTester {
         }
     }
 
-    private void execJava(String filename) {
+    private void execJava(String filename, boolean extraCmdWindow) {
         List<File> javaFiles = FileHandler.recursiveSearch(workingDir, path -> path.getName().endsWith(".java"));
         if(javaFiles.isEmpty())
             System.out.println("Nothing to execute");
         else {
-            // TODO implement
-            throw new UnsupportedOperationException();
+            // select file by path name
+            if(!filename.endsWith(".java"))
+                filename += ".java";
+            File selected = null;
+            for (File f : javaFiles) {
+                if(f.getName().equals(filename)) {
+                    selected = f;
+                    break;
+                }
+            }
+            // if a file could be selected
+            if(selected != null) {
+                if(extraCmdWindow) {
+                    executeCmdCommand(workingDir.getParentFile(), "start run.cmd " + selected.getName().replaceFirst(".java", ""));
+                }
+                else {
+                    if (executeCmdCommand(selected.getParentFile(), "javac " + selected.getName()) != 0) {
+                        System.out.println("error compiling");
+                    } else {
+                        if (executeCmdCommand(selected.getParentFile(), "java " + selected.getName().replaceFirst(".java", "")) != 0)
+                            System.out.println("error executing");
+                    }
+                }
+            }
+            else
+                System.out.println("file not found!");
         }
 
+    }
+
+    private static int executeRunCmd(File dir, String args) {
+        try {
+            Process process = new ProcessBuilder()
+                    .directory(dir)
+                    .command("run.cmd", args)
+                    .start();
+            Executors.newSingleThreadExecutor().submit(new StreamGobbler(process.getInputStream(), System.out::println));
+            int exitCode = process.waitFor();
+            return exitCode;
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+        return -1;
+    }
+
+    private static int executeCmdCommand(File dir, String command) {
+        try {
+            Process process = new ProcessBuilder()
+                    .directory(dir)
+                    .command("cmd.exe", "/c", command)
+                    .start();
+            Executors.newSingleThreadExecutor().submit(new StreamGobbler(process.getInputStream(), System.out::println));
+            int exitCode = process.waitFor();
+            return exitCode;
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+        return -1;
     }
 
     private void setChecked(boolean checked) {
