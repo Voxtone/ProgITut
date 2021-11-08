@@ -10,6 +10,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 // TODO implement execute command (only if loaded successfully)
@@ -337,8 +338,10 @@ public class SubmissionTester {
                     .directory(dir)
                     .command("cmd.exe", "/c", command)
                     .start();
-            Executors.newSingleThreadExecutor().submit(new StreamGobbler(process.getInputStream(), System.out::println));
+            ExecutorService service = Executors.newSingleThreadExecutor();
+            service.submit(new StreamGobbler(process.getInputStream(), System.out::println));
             int exitCode = process.waitFor();
+            service.shutdown();
             return exitCode;
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
@@ -366,7 +369,6 @@ public class SubmissionTester {
 
     private void exit() {
         save();
-        // TODO also exit when java command was executed
     }
 
     public static void main(String[] args) {
