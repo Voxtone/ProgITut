@@ -103,7 +103,7 @@ public class SubmissionTester {
                 "search <matNum | lastname> \t searches for first occurrence of submission belonging to the specified student\n" +
                 "load \t\t\t\t\t\t loads all .java files into working directory for execution\n" +
                 "ls \t\t\t\t\t\t\t shows all loaded .java files\n" +
-                "java <filename> \t\t\t\t executes the given .java file\n" +
+                "java <filename> \t\t\t executes the given .java file; if -n then a new cmd window will be opened (needed for input)\n" +
                 "check \t\t\t\t\t\t marks as checked\n" +
                 "uncheck \t\t\t\t\t marks as unchecked\n" +
                 "pass \t\t\t\t\t\t marks as passed\n" +
@@ -204,7 +204,7 @@ public class SubmissionTester {
             return true;
         }
         else if(command.startsWith("exit")) {
-            save();
+            exit();
             return true;
         }
         else if(command.startsWith("help")) {
@@ -331,21 +331,6 @@ public class SubmissionTester {
 
     }
 
-    private static int executeRunCmd(File dir, String args) {
-        try {
-            Process process = new ProcessBuilder()
-                    .directory(dir)
-                    .command("run.cmd", args)
-                    .start();
-            Executors.newSingleThreadExecutor().submit(new StreamGobbler(process.getInputStream(), System.out::println));
-            int exitCode = process.waitFor();
-            return exitCode;
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
-        }
-        return -1;
-    }
-
     private static int executeCmdCommand(File dir, String command) {
         try {
             Process process = new ProcessBuilder()
@@ -377,6 +362,11 @@ public class SubmissionTester {
         for(int i = 0; i < json.length(); i++) {
             System.out.println(JSONHandler.submissionObjToComment(json.getJSONObject(i)) + "\n");
         }
+    }
+
+    private void exit() {
+        save();
+        // TODO also exit when java command was executed
     }
 
     public static void main(String[] args) {
