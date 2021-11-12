@@ -83,6 +83,7 @@ public class SubmissionSplitter {
 
         printSplit(fileCount);
         executeSplit();
+        zipSplit();
     }
 
     private void giveFileTo(String name, File file) {
@@ -97,6 +98,7 @@ public class SubmissionSplitter {
             System.out.println(name + (name.length() < 4 ? "\t" : "") + (name.length() < 8 ? "\t" : "") + "\tassigned submissions: " + assigned
                     + "; Difference to determined amount: " + (diff > 0 ? "+" : "") + diff);
         }
+        System.out.println("---------------");
     }
 
     private void executeSplit() {
@@ -110,7 +112,12 @@ public class SubmissionSplitter {
                     if (dir.listFiles().length != 1)
                         throw new MultipleFilesContainedException(dir.getName());
 
-                    extractArchiveTo(dir.listFiles()[0], new File(outputDir.getPath() + "/" + name + "/" + extractName(dir)));
+                    File dest = new File(outputDir.getPath() + "/" + name + "/" + extractName(dir));
+                    extractArchiveTo(dir.listFiles()[0], dest);
+
+                    // warning if no .java files are contained
+                    if(FileHandler.recursiveSearch(dest, path -> path.getName().endsWith(".java")).isEmpty())
+                        System.out.println("WARNING no .java files contained in: " + dest);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -146,12 +153,21 @@ public class SubmissionSplitter {
         }
     }
 
+    private void zipSplit() {
+        try {
+            for(File dir : outputDir.listFiles())
+            zip.create(dir.getName().toLowerCase() + ".zip", outputDir, dir);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public static void main(String[] args) {
         Map<String, Integer> amountMap = new HashMap<>();
-        amountMap.put("TOM", TOM_AMOUNT);
         amountMap.put("DAVE", DAVE_AMOUNT);
         amountMap.put("NICOLAS", NICOLAS_AMOUNT);
         amountMap.put("JOHANNES", JOHANNES_AMOUNT);
+        amountMap.put("TOM", TOM_AMOUNT);
         SubmissionSplitter splitter = new SubmissionSplitter(amountMap, SUBMISSIONS_PATH, OUTPUT_PATH);
         splitter.split();
     }
