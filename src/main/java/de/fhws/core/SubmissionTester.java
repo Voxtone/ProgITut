@@ -13,7 +13,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 
-
+// TODO fix java command, add quick selection with number
+// TODO delete package line in every .java file
+// TODO fix next -u (one to far)
 public class SubmissionTester {
 
     public static final String NAME = "DAVE";
@@ -104,7 +106,7 @@ public class SubmissionTester {
                 search <matNum | lastname> \t searches for first occurrence of submission belonging to the specified student
                 load \t\t\t\t\t\t loads all .java files into working directory for execution
                 ls \t\t\t\t\t\t\t shows all loaded .java files
-                java <filename> \t\t\t executes the given .java file; if -n then a new cmd window will be opened (needed for input)
+                java [-n] <filename> \t\t\t executes the given .java file; if -n then a new cmd window will be opened (needed for input)
                 check \t\t\t\t\t\t marks as checked
                 uncheck \t\t\t\t\t marks as unchecked
                 pass \t\t\t\t\t\t marks as passed
