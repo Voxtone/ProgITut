@@ -109,7 +109,7 @@ public class SubmissionTester {
                 uncheck \t\t\t\t\t marks as unchecked
                 pass \t\t\t\t\t\t marks as passed
                 unpass \t\t\t\t\t\t marks as not passed
-                comment <commentary> \t\t adds a comment and marks as checked
+                comment [-a] <commentary> \t\t sets a comment and marks as checked. If -a is set, comment will be appended
                 commentary \t\t\t\t\t lists all comments (in order to copy paste)
                 exit \t\t\t\t\t\t saves and exits
                 help \t\t\t\t\t\t displays this page""";
@@ -195,7 +195,11 @@ public class SubmissionTester {
             return true;
         }
         else if(command.startsWith("comment ")) {
-            comment(command.replaceFirst("comment ", ""));
+            if(command.replaceFirst("comment ", "").startsWith("-a "))
+                comment(command.replaceFirst("comment -a ", ""), true);
+            else
+                comment(command.replaceFirst("comment ", ""), false);
+
             setChecked(true);
             printInfo();
             return true;
@@ -358,7 +362,9 @@ public class SubmissionTester {
         json.put(curr, json.getJSONObject(curr).put("passed", passed));
     }
 
-    private void comment(String commentary) {
+    private void comment(String commentary, boolean append) {
+        if(append)
+            commentary = json.getJSONObject(curr).getString("commentary") + " " + commentary;
         json.put(curr, json.getJSONObject(curr).put("commentary", commentary));
     }
 
