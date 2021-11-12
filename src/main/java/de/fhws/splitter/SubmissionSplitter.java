@@ -168,8 +168,12 @@ public class SubmissionSplitter {
         amountMap.put("NICOLAS", NICOLAS_AMOUNT);
         amountMap.put("JOHANNES", JOHANNES_AMOUNT);
         amountMap.put("TOM", TOM_AMOUNT);
-        SubmissionSplitter splitter = new SubmissionSplitter(amountMap, SUBMISSIONS_PATH, OUTPUT_PATH);
-        splitter.split();
+        System.out.println("are you sure you want to do this? all files in the submission path will be deleted (including .json) [y/n]:");
+        String in = new Scanner(System.in).nextLine();
+        if(in.equals("y")) {
+            SubmissionSplitter splitter = new SubmissionSplitter(amountMap, SUBMISSIONS_PATH, OUTPUT_PATH);
+            splitter.split();
+        }
     }
 
 }
