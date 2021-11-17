@@ -16,9 +16,13 @@ import java.util.concurrent.Executors;
 // TODO fix java command, add quick selection with number
 // TODO delete package line in every .java file
 // TODO fix next -u (one to far)
+// TODO fix recursiveDelete in FileHandler (check delete does not work correctly, maybe bc console prevents it)
+// TODO add Timer
+
 public class SubmissionTester {
 
     public static final String NAME = "DAVE";
+    public static final String EMAIL = "david.kupper@student.fhws.de";
 
     private final File submissions;
     private final File workingDir;
