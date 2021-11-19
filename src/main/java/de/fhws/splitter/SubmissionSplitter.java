@@ -19,10 +19,10 @@ import org.rauschig.jarchivelib.ArchiverFactory;
 public class SubmissionSplitter {
     public static final String SUBMISSIONS_PATH = "files/submissions";
     public static final String OUTPUT_PATH = "files/split";
-    public static final int TOM_AMOUNT = 18;
-    public static final int DAVE_AMOUNT = 38;
-    public static final int NICOLAS_AMOUNT = 34;
-    public static final int JOHANNES_AMOUNT = 21;
+    public static final int TOM_AMOUNT = 18; // 16,2 %
+    public static final int DAVE_AMOUNT = 38; // 34,2 %
+    public static final int NICOLAS_AMOUNT = 34; //30,6 %
+    public static final int JOHANNES_AMOUNT = 21; // 18.9 %
 
     // paths
     private final File submissions;
@@ -58,10 +58,37 @@ public class SubmissionSplitter {
 
     }
 
-    /**
-     * splits the submissions in the specified output directory
-     */
-    public void split() {
+    public int splitRelative() {
+        List<File> allFiles = Arrays.stream(submissions.listFiles()).collect(Collectors.toList());
+        int fileCount = allFiles.size();
+        int sumAmounts = 0;
+        for(String name : amountMap.keySet()) {
+            sumAmounts += amountMap.get(name);
+        }
+
+        Map<String, Integer> diff = new HashMap<>();
+        for(String name : amountMap.keySet()) {
+            double relative = amountMap.get(name) / (double) sumAmounts;
+            int assignedSubmissions = (int) (relative * fileCount);
+            diff.put(name, assignedSubmissions - amountMap.get(name));
+            for (int i = 0; i < assignedSubmissions; i++) {
+                giveFileTo(name, allFiles.remove(0));
+            }
+        }
+
+        // TODO test this code segment
+        List<String> names = amountMap.keySet().stream().collect(Collectors.toList());
+        int index = 0;
+        while(!allFiles.isEmpty()) {
+            giveFileTo(names.get(index), allFiles.remove(0));
+            index++;
+            index %= amountMap.size();
+        }
+
+        return fileCount;
+    }
+
+    public int splitAbsolute() {
         List<File> allFiles = Arrays.stream(submissions.listFiles()).collect(Collectors.toList());
         int fileCount = allFiles.size();
         int overhead = (fileCount - summedAmount) / amountMap.size();
@@ -80,28 +107,24 @@ public class SubmissionSplitter {
                 giveFileTo(name, allFiles.remove(0));
             }
         }
-
-        printSplit(fileCount);
-        executeSplit();
-        zipSplit();
+        return fileCount;
     }
 
-    private void giveFileTo(String name, File file) {
-        fileMap.get(name).add(file);
-    }
-
-    private void printSplit(int total) {
+    public void printSplit(int total) {
         System.out.println("Total submissions: " + total);
+        int totalAssigned = 0;
         for (String name : fileMap.keySet()) {
             int assigned = fileMap.get(name).size();
+            totalAssigned += assigned;
             int diff = assigned - amountMap.get(name);
             System.out.println(name + (name.length() < 4 ? "\t" : "") + (name.length() < 8 ? "\t" : "") + "\tassigned submissions: " + assigned
                     + "; Difference to determined amount: " + (diff > 0 ? "+" : "") + diff);
         }
+        System.out.println("check total assigned: " + totalAssigned);
         System.out.println("---------------");
     }
 
-    private void executeSplit() {
+    public void splitFilesIntoFolder() {
         for (String name : fileMap.keySet()) {
             for (File dir : fileMap.get(name)) {
                 try {
@@ -123,6 +146,19 @@ public class SubmissionSplitter {
                 }
             }
         }
+    }
+
+    public void zipSplit() {
+        try {
+            for(File dir : outputDir.listFiles())
+                zip.create(dir.getName().toLowerCase() + ".zip", outputDir, dir);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void giveFileTo(String name, File file) {
+        fileMap.get(name).add(file);
     }
 
     private String extractName(File f) {
@@ -153,15 +189,6 @@ public class SubmissionSplitter {
         }
     }
 
-    private void zipSplit() {
-        try {
-            for(File dir : outputDir.listFiles())
-            zip.create(dir.getName().toLowerCase() + ".zip", outputDir, dir);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
     public static void main(String[] args) {
         Map<String, Integer> amountMap = new HashMap<>();
         amountMap.put("DAVE", DAVE_AMOUNT);
@@ -172,7 +199,10 @@ public class SubmissionSplitter {
         String in = new Scanner(System.in).nextLine();
         if(in.equals("y")) {
             SubmissionSplitter splitter = new SubmissionSplitter(amountMap, SUBMISSIONS_PATH, OUTPUT_PATH);
-            splitter.split();
+            int fileCount = splitter.splitRelative();
+            splitter.printSplit(fileCount);
+            splitter.splitFilesIntoFolder();
+            splitter.zipSplit();
         }
     }
 
