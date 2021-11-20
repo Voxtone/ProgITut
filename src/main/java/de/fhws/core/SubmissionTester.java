@@ -110,11 +110,12 @@ public class SubmissionTester {
                 load \t\t\t\t\t\t loads all .java files into working directory for execution
                 ls \t\t\t\t\t\t\t shows all loaded .java files
                 java [-d] <file index> \t\t\t executes the given .java file; if -d then a no new cmd window will
-                be opened (needed for input), instead its executed directly
+                \t\t\t\t\t\t\t\t\t be opened (needed for input), instead it's executed directly
                 check \t\t\t\t\t\t marks as checked
                 uncheck \t\t\t\t\t marks as unchecked
                 pass \t\t\t\t\t\t marks as passed
                 unpass \t\t\t\t\t\t marks as not passed
+                comment
                 comment [-a] <commentary> \t\t sets a comment and marks as checked. If -a is set, comment will be appended
                 commentary \t\t\t\t\t lists all comments (in order to copy paste)
                 exit \t\t\t\t\t\t saves and exits
@@ -203,6 +204,9 @@ public class SubmissionTester {
             setPassed(false);
             printInfo();
             return true;
+        }
+        else if(command.equals("comment")) {
+            openCommentWindow();
         }
         else if(command.startsWith("comment ")) {
             if(command.replaceFirst("comment ", "").startsWith("-a "))
@@ -375,6 +379,10 @@ public class SubmissionTester {
         for(int i = 0; i < json.length(); i++) {
             System.out.println(JSONHandler.submissionObjToComment(json.getJSONObject(i)) + "\n");
         }
+    }
+
+    public void openCommentWindow() {
+
     }
 
     public void exit() {
