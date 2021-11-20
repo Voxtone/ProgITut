@@ -7,16 +7,14 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 
-// TODO fix java command, add quick selection with number
 // TODO delete package line in every .java file
-// TODO fix next -u (one to far)
-// TODO fix recursiveDelete in FileHandler (check delete does not work correctly, maybe bc console prevents it)
 // TODO add Timer
 
 public class SubmissionTester {
@@ -26,6 +24,7 @@ public class SubmissionTester {
 
     private final File submissions;
     private final File workingDir;
+    private final List<File> loadedFiles = new ArrayList<>();
     private final JSONArray json;
     private final File jsonFile;
 
@@ -110,7 +109,8 @@ public class SubmissionTester {
                 search <matNum | lastname> \t searches for first occurrence of submission belonging to the specified student
                 load \t\t\t\t\t\t loads all .java files into working directory for execution
                 ls \t\t\t\t\t\t\t shows all loaded .java files
-                java [-n] <filename> \t\t\t executes the given .java file; if -n then a new cmd window will be opened (needed for input)
+                java [-d] <file index> \t\t\t executes the given .java file; if -d then a no new cmd window will
+                be opened (needed for input), instead its executed directly
                 check \t\t\t\t\t\t marks as checked
                 uncheck \t\t\t\t\t marks as unchecked
                 pass \t\t\t\t\t\t marks as passed
@@ -174,10 +174,14 @@ public class SubmissionTester {
             return true;
         }
         else if(command.startsWith("java ")) {
-            if(command.replaceFirst("java ", "").startsWith("-n "))
-                execJava(command.replaceFirst("java -n ", ""), true);
-            else
-                execJava(command.replaceFirst("java ", ""), false);
+            if(command.replaceFirst("java ", "").startsWith("-d ")) {
+                int fileIndex = Integer.parseInt(command.replaceFirst("java -d ", ""));
+                execJava(fileIndex, false);
+            }
+            else {
+                int fileIndex = Integer.parseInt(command.replaceFirst("java ", ""));
+                execJava(fileIndex, true);
+            }
             return true;
         }
         else if(command.startsWith("check")) {
@@ -250,9 +254,10 @@ public class SubmissionTester {
     }
 
     public void advanceNextUnchecked() {
-        boolean checked = true;
-        while (next() && checked) {
-            checked = json.getJSONObject(curr).getBoolean("checked");
+        while (next()) {
+            boolean checked = json.getJSONObject(curr).getBoolean("checked");
+            if(checked)
+                break;
         }
     }
 
@@ -281,6 +286,8 @@ public class SubmissionTester {
     }
 
     public void load() {
+        loadedFiles.clear();
+
         for (File f : workingDir.listFiles())
             FileHandler.recursiveDelete(f);
 
@@ -290,6 +297,7 @@ public class SubmissionTester {
         List<File> javaFiles = FileHandler.recursiveSearch(currentDir, path -> path.getName().endsWith(".java"));
         for(File f : javaFiles) {
             File dest = new File(workingDir + "/" + currentDir.toPath().relativize(f.toPath()).toString());
+            loadedFiles.add(dest);
             FileHandler.createDirectory(dest.getParentFile());
             try {
                 Files.copy(f.toPath(), dest.toPath(), StandardCopyOption.REPLACE_EXISTING);
@@ -303,42 +311,31 @@ public class SubmissionTester {
 
     public void printWorkspace() {
         System.out.println(workingDir.getAbsolutePath());
-        for(File f : FileHandler.recursiveSearch(workingDir, path -> path.getName().endsWith(".java"))) {
-            System.out.println(workingDir.toPath().relativize(f.toPath()));
+        for(int i = 0; i < loadedFiles.size(); i++) {
+            System.out.println((i+1) + ") " + workingDir.toPath().relativize(loadedFiles.get(i).toPath()));
         }
     }
 
-    public void execJava(String filename, boolean extraCmdWindow) {
-        List<File> javaFiles = FileHandler.recursiveSearch(workingDir, path -> path.getName().endsWith(".java"));
-        if(javaFiles.isEmpty())
+    public void execJava(int fileIndex, boolean extraCmdWindow) {
+        if(loadedFiles.isEmpty())
             System.out.println("Nothing to execute");
         else {
             // select file by path name
-            if(!filename.endsWith(".java"))
-                filename += ".java";
-            File selected = null;
-            for (File f : javaFiles) {
-                if(f.getName().equals(filename)) {
-                    selected = f;
-                    break;
-                }
+            File selected;
+            try {
+                selected = loadedFiles.get(--fileIndex);
+            } catch (IndexOutOfBoundsException e) {
+                System.out.println("index is not in range!");
+                return;
             }
-            // if a file could be selected
-            if(selected != null) {
-                if(extraCmdWindow) {
-                    executeCmdCommand(workingDir.getParentFile(), "start run.cmd " + selected.getName().replaceFirst(".java", ""));
-                }
-                else {
-                    if (executeCmdCommand(selected.getParentFile(), "javac " + selected.getName()) != 0) {
-                        System.out.println("error compiling");
-                    } else {
-                        if (executeCmdCommand(selected.getParentFile(), "java " + selected.getName().replaceFirst(".java", "")) != 0)
-                            System.out.println("error executing");
-                    }
-                }
+
+            if(extraCmdWindow) {
+                executeCmdCommand(workingDir.getParentFile(), "start run.cmd " + selected.toPath().toAbsolutePath());
             }
-            else
-                System.out.println("file not found!");
+            else {
+                if (executeCmdCommand(selected.getParentFile(), "java " + selected.toPath().toAbsolutePath()) != 0)
+                    System.out.println("error executing");
+            }
         }
 
     }
@@ -386,7 +383,8 @@ public class SubmissionTester {
 
     public static void main(String[] args) {
         SubmissionTester tester = new SubmissionTester("files/split/" + NAME + "", "files/check");
-        new Window(tester);
+        //new Window(tester);
+        tester.startDialog();
     }
 
 
