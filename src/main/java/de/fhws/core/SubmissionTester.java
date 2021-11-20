@@ -81,7 +81,7 @@ public class SubmissionTester {
         sc.close();
     }
 
-    private void printInfo() {
+    public void printInfo() {
         StringBuilder builder = new StringBuilder();
         builder.append("current index: ").append(curr).append(" of ").append(json.length() - 1).append("\n");
         if(curr < 0)
@@ -93,13 +93,13 @@ public class SubmissionTester {
         System.out.println(builder.toString());
     }
 
-    private void printAll() {
+    public void printAll() {
         for (int i = 0; i < json.length(); i++) {
             System.out.println(JSONHandler.submissionObjToString(json.getJSONObject(i)));
         }
     }
 
-    private void printHelpPage() {
+    public void printHelpPage() {
         String s = """
                 commands:\s
                 info \t\t\t\t\t\t displays info of current submission
@@ -122,7 +122,7 @@ public class SubmissionTester {
         System.out.println(s);
     }
 
-    private boolean executeCommand(String command) {
+    public boolean executeCommand(String command) {
         if(command.startsWith("info")) {
             printInfo();
             return true;
@@ -225,14 +225,14 @@ public class SubmissionTester {
         return false;
     }
 
-    private void save() {
+    public void save() {
         JSONObject mainObj = new JSONObject();
         mainObj.put("submissions", json);
         if(!JSONHandler.save(jsonFile, mainObj))
             System.out.println("failed to save data");
     }
 
-    private void setCurr(int index) {
+    public void setCurr(int index) {
         if(index >= 0 && index < json.length())
             curr = index;
         else
@@ -243,20 +243,20 @@ public class SubmissionTester {
      * advances current; equivalent to setCurr(curr+1)
      * @return {@code true} if there is a next element {@code false} otherwise
      */
-    private boolean next() {
+    public boolean next() {
         boolean isNext = curr < json.length() - 1;
         setCurr(curr + 1);
         return isNext;
     }
 
-    private void advanceNextUnchecked() {
+    public void advanceNextUnchecked() {
         boolean checked = true;
         while (next() && checked) {
             checked = json.getJSONObject(curr).getBoolean("checked");
         }
     }
 
-    private void searchByMatNum(int matNum) {
+    public void searchByMatNum(int matNum) {
         for(int i = 0; i < json.length(); i++) {
             if(json.getJSONObject(i).getInt("matNum") == matNum) {
                 curr = i;
@@ -268,7 +268,7 @@ public class SubmissionTester {
         System.out.println("Not found!");
     }
 
-    private void searchByLastName(String name) {
+    public void searchByLastName(String name) {
         for(int i = 0; i < json.length(); i++) {
             if(json.getJSONObject(i).getString("lastname").equals(name)) {
                 curr = i;
@@ -280,7 +280,7 @@ public class SubmissionTester {
         System.out.println("Not found!");
     }
 
-    private void load() {
+    public void load() {
         for (File f : workingDir.listFiles())
             FileHandler.recursiveDelete(f);
 
@@ -301,14 +301,14 @@ public class SubmissionTester {
         printWorkspace();
     }
 
-    private void printWorkspace() {
+    public void printWorkspace() {
         System.out.println(workingDir.getAbsolutePath());
         for(File f : FileHandler.recursiveSearch(workingDir, path -> path.getName().endsWith(".java"))) {
             System.out.println(workingDir.toPath().relativize(f.toPath()));
         }
     }
 
-    private void execJava(String filename, boolean extraCmdWindow) {
+    public void execJava(String filename, boolean extraCmdWindow) {
         List<File> javaFiles = FileHandler.recursiveSearch(workingDir, path -> path.getName().endsWith(".java"));
         if(javaFiles.isEmpty())
             System.out.println("Nothing to execute");
@@ -343,7 +343,7 @@ public class SubmissionTester {
 
     }
 
-    private static int executeCmdCommand(File dir, String command) {
+    public static int executeCmdCommand(File dir, String command) {
         try {
             Process process = new ProcessBuilder()
                     .directory(dir)
@@ -360,33 +360,33 @@ public class SubmissionTester {
         return -1;
     }
 
-    private void setChecked(boolean checked) {
+    public void setChecked(boolean checked) {
         json.put(curr, json.getJSONObject(curr).put("checked", checked));
     }
 
-    private void setPassed(boolean passed) {
+    public void setPassed(boolean passed) {
         json.put(curr, json.getJSONObject(curr).put("passed", passed));
     }
 
-    private void comment(String commentary, boolean append) {
+    public void comment(String commentary, boolean append) {
         if(append)
             commentary = json.getJSONObject(curr).getString("commentary") + " " + commentary;
         json.put(curr, json.getJSONObject(curr).put("commentary", commentary));
     }
 
-    private void commentary() {
+    public void commentary() {
         for(int i = 0; i < json.length(); i++) {
             System.out.println(JSONHandler.submissionObjToComment(json.getJSONObject(i)) + "\n");
         }
     }
 
-    private void exit() {
+    public void exit() {
         save();
     }
 
     public static void main(String[] args) {
         SubmissionTester tester = new SubmissionTester("files/split/" + NAME + "", "files/check");
-        tester.startDialog();
+        new Window(tester);
     }
 
 
