@@ -21,8 +21,15 @@ public class JSONHandler {
         return "{\nmatriculate number: " + sub.getInt("matNum") + "\n" +
                 "name: \t\t\t\t" + sub.getString("firstname") + " " + sub.getString("lastname") + "\n" +
                 "checked: \t\t\t" + sub.getBoolean("checked") + "\n" +
-                "commentary: \t\t" + sub.getString("commentary") + "\n" +
+                "commentary: \n" + sub.getString("commentary") + "\n" +
                 "passed: \t\t\t" + sub.getBoolean("passed") + "\n}";
+    }
+
+    public static String submissionObjToStringEssential(JSONObject sub) {
+        return "{\nmatriculate number: " + sub.getInt("matNum") + "\n" +
+                "name: " + sub.getString("firstname") + " " + sub.getString("lastname") + "\n" +
+                "checked: " + sub.getBoolean("checked") + "\n" +
+                "passed: " + sub.getBoolean("passed") + "\n}";
     }
 
     public static String submissionObjToComment(JSONObject sub) {

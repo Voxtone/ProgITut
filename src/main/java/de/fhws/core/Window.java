@@ -1,71 +1,55 @@
 package de.fhws.core;
 
 import javax.swing.*;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
 
-public class Window extends JFrame implements WindowListener {
-    public static final int WIDTH = 1600, HEIGHT = 900;
-    SubmissionTester tester;
+public class Window extends JFrame {
+    public static final int WIDTH = 700, HEIGHT = 900;
+
+    private final JPanel root = new JPanel();
 
     //JFrame stuff
-    private final JTextArea info = new JTextArea();
-    private final JButton[] btns = new JButton[6];
+    private final JTextArea infoText = new JTextArea();
+    private final JTextArea commentText = new JTextArea();
     // enum with btns?
 
-    public Window(SubmissionTester tester) {
-        super("Submission Tester");
+    public Window() {
+        super("Comment");
+        initWindow();
+        super.add(root);
         super.setSize(WIDTH, HEIGHT);
         super.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         super.setLocationRelativeTo(null);
-
-        initWindow();
-
         super.setVisible(true);
         super.pack();
 
-        super.addWindowListener(this);
-
-        this.tester = tester;
     }
 
     private void initWindow() {
-        super.add(info);
+        root.setLayout(new BoxLayout(root, BoxLayout.Y_AXIS));
+
+        infoText.setSize(WIDTH, HEIGHT / 2);
+        infoText.setEditable(false);
+        infoText.setCursor(null);
+        infoText.setOpaque(false);
+        infoText.setFocusable(false);
+        infoText.setLineWrap(true);
+        infoText.setWrapStyleWord(true);
+        root.add(infoText);
+        commentText.setSize(WIDTH, HEIGHT / 2);
+        root.add(commentText);
     }
 
-    @Override
-    public void windowOpened(WindowEvent e) {
-
+    public void setInfoText(String s) {
+        infoText.setText(s);
+        this.pack();
     }
 
-    @Override
-    public void windowClosing(WindowEvent e) {
-
+    public void setCommentText(String s) {
+        commentText.setText(s);
+        this.pack();
     }
 
-    @Override
-    public void windowClosed(WindowEvent e) {
-        tester.save();
-        System.exit(0);
-    }
-
-    @Override
-    public void windowIconified(WindowEvent e) {
-
-    }
-
-    @Override
-    public void windowDeiconified(WindowEvent e) {
-
-    }
-
-    @Override
-    public void windowActivated(WindowEvent e) {
-
-    }
-
-    @Override
-    public void windowDeactivated(WindowEvent e) {
-        tester.save();
+    public String getCommentText() {
+        return commentText.getText();
     }
 }

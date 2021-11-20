@@ -28,6 +28,8 @@ public class SubmissionTester {
     private final JSONArray json;
     private final File jsonFile;
 
+    private final Window commentWindow = new Window();
+
     private int curr = 0;
 
     /**
@@ -67,6 +69,7 @@ public class SubmissionTester {
      * starts a command based dialog between user and console
      */
     public void startDialog() {
+        updateCommentWindow();
         Scanner sc = new Scanner(System.in);
         printHelpPage();
         String in;
@@ -81,6 +84,10 @@ public class SubmissionTester {
     }
 
     public void printInfo() {
+        System.out.println(getInfoString());
+    }
+
+    public String getInfoString() {
         StringBuilder builder = new StringBuilder();
         builder.append("current index: ").append(curr).append(" of ").append(json.length() - 1).append("\n");
         if(curr < 0)
@@ -89,7 +96,7 @@ public class SubmissionTester {
             builder.append("finished - no more submissions available");
         else
             builder.append(JSONHandler.submissionObjToString(json.getJSONObject(curr)));
-        System.out.println(builder.toString());
+        return builder.toString();
     }
 
     public void printAll() {
@@ -117,7 +124,8 @@ public class SubmissionTester {
                 unpass \t\t\t\t\t\t marks as not passed
                 comment
                 comment [-a] <commentary> \t\t sets a comment and marks as checked. If -a is set, comment will be appended
-                commentary \t\t\t\t\t lists all comments (in order to copy paste)
+                commentary \t\t\t\t\t opens commentary editor
+                printcomments \t\t\t\t\t lists all comments (in order to copy paste)
                 exit \t\t\t\t\t\t saves and exits
                 help \t\t\t\t\t\t displays this page""";
         System.out.println(s);
@@ -143,7 +151,6 @@ public class SubmissionTester {
             return true;
         }
         else if(command.startsWith("next")) {
-            save();
             if(command.contains("-u")) {
                 advanceNextUnchecked();
             }
@@ -175,15 +182,20 @@ public class SubmissionTester {
             return true;
         }
         else if(command.startsWith("java ")) {
-            if(command.replaceFirst("java ", "").startsWith("-d ")) {
-                int fileIndex = Integer.parseInt(command.replaceFirst("java -d ", ""));
-                execJava(fileIndex, false);
+            try {
+                if(command.replaceFirst("java ", "").startsWith("-d ")) {
+                    int fileIndex = Integer.parseInt(command.replaceFirst("java -d ", ""));
+                    execJava(fileIndex, false);
+                }
+                else {
+                    int fileIndex = Integer.parseInt(command.replaceFirst("java ", ""));
+                    execJava(fileIndex, true);
+                }
+                return true;
+            } catch (NumberFormatException e) {
+                System.out.println("number needed!");
+                return false;
             }
-            else {
-                int fileIndex = Integer.parseInt(command.replaceFirst("java ", ""));
-                execJava(fileIndex, true);
-            }
-            return true;
         }
         else if(command.startsWith("check")) {
             setChecked(true);
@@ -206,7 +218,7 @@ public class SubmissionTester {
             return true;
         }
         else if(command.equals("comment")) {
-            openCommentWindow();
+            updateCommentWindow();
         }
         else if(command.startsWith("comment ")) {
             if(command.replaceFirst("comment ", "").startsWith("-a "))
@@ -219,7 +231,10 @@ public class SubmissionTester {
             return true;
         }
         else if(command.startsWith("commentary")) {
-            commentary();
+            throw new UnsupportedOperationException("not implemented");
+        }
+        else if(command.startsWith("printcomments")) {
+            printComments();
             return true;
         }
         else if(command.startsWith("exit")) {
@@ -241,8 +256,11 @@ public class SubmissionTester {
     }
 
     public void setCurr(int index) {
-        if(index >= 0 && index < json.length())
+        writeToJsonFromWindow();
+        if(index >= 0 && index < json.length()) {
             curr = index;
+            updateCommentWindow();
+        }
         else
             System.out.println("index not in range!");
     }
@@ -252,6 +270,7 @@ public class SubmissionTester {
      * @return {@code true} if there is a next element {@code false} otherwise
      */
     public boolean next() {
+        save();
         boolean isNext = curr < json.length() - 1;
         setCurr(curr + 1);
         return isNext;
@@ -268,7 +287,7 @@ public class SubmissionTester {
     public void searchByMatNum(int matNum) {
         for(int i = 0; i < json.length(); i++) {
             if(json.getJSONObject(i).getInt("matNum") == matNum) {
-                curr = i;
+                setCurr(i);
                 System.out.println("Found!");
                 printInfo();
                 return;
@@ -280,7 +299,7 @@ public class SubmissionTester {
     public void searchByLastName(String name) {
         for(int i = 0; i < json.length(); i++) {
             if(json.getJSONObject(i).getString("lastname").equals(name)) {
-                curr = i;
+                setCurr(i);
                 System.out.println("Found!");
                 printInfo();
                 return;
@@ -334,7 +353,7 @@ public class SubmissionTester {
             }
 
             if(extraCmdWindow) {
-                executeCmdCommand(workingDir.getParentFile(), "start run.cmd " + selected.toPath().toAbsolutePath());
+                executeCmdCommand(workingDir.getParentFile(), "start run.cmd \"" + selected.toPath().toAbsolutePath() + "\"");
             }
             else {
                 if (executeCmdCommand(selected.getParentFile(), "java " + selected.toPath().toAbsolutePath()) != 0)
@@ -375,14 +394,22 @@ public class SubmissionTester {
         json.put(curr, json.getJSONObject(curr).put("commentary", commentary));
     }
 
-    public void commentary() {
+    public void printComments() {
         for(int i = 0; i < json.length(); i++) {
             System.out.println(JSONHandler.submissionObjToComment(json.getJSONObject(i)) + "\n");
         }
     }
 
-    public void openCommentWindow() {
+    public void updateCommentWindow() {
+        commentWindow.setInfoText(JSONHandler.submissionObjToStringEssential(json.getJSONObject(curr)));
+        commentWindow.setCommentText(json.getJSONObject(curr).getString("commentary"));
+    }
 
+    public void writeToJsonFromWindow() {
+        String comment = commentWindow.getCommentText();
+        json.getJSONObject(curr).put("commentary", comment);
+        if(!comment.equals(""))
+            setChecked(true);
     }
 
     public void exit() {
