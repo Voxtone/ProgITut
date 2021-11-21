@@ -37,7 +37,7 @@ public class JSONHandler {
         return sub.getString("firstname") + " " + sub.getString("lastname") + " " + sub.getInt("matNum") + " " +
                 (sub.getBoolean("passed") ? "passed" : "!NOT PASSED!") +
                 "\n" + (comment.equals("") ? "-/-" : comment) +
-                "\n "+ SubmissionTester.EMAIL;
+                "\n"+ "Fragen?: " + SubmissionTester.EMAIL;
     }
 
     public static JSONObject load(File path) {
