@@ -77,7 +77,7 @@ public class SubmissionSplitter {
         }
 
         // TODO test this code segment
-        List<String> names = amountMap.keySet().stream().collect(Collectors.toList());
+        List<String> names = new ArrayList<>(amountMap.keySet());
         int index = 0;
         while(!allFiles.isEmpty()) {
             giveFileTo(names.get(index), allFiles.remove(0));
