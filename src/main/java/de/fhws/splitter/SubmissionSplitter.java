@@ -58,6 +58,15 @@ public class SubmissionSplitter {
 
     }
 
+    public void doSplit() {
+        int fileCount = splitRelative();
+        printSplit(fileCount);
+        int check = splitFilesIntoFolder();
+        System.out.println("check total extracted: " + check);
+        System.out.println("---------------");
+        zipSplit();
+    }
+
     public int splitRelative() {
         List<File> allFiles = Arrays.stream(submissions.listFiles()).collect(Collectors.toList());
         int fileCount = allFiles.size();
@@ -121,10 +130,10 @@ public class SubmissionSplitter {
                     + "; Difference to determined amount: " + (diff > 0 ? "+" : "") + diff);
         }
         System.out.println("check total assigned: " + totalAssigned);
-        System.out.println("---------------");
     }
 
-    public void splitFilesIntoFolder() {
+    public int splitFilesIntoFolder() {
+        int check = 0;
         for (String name : fileMap.keySet()) {
             for (File dir : fileMap.get(name)) {
                 try {
@@ -137,6 +146,7 @@ public class SubmissionSplitter {
 
                     File dest = new File(outputDir.getPath() + "/" + name + "/" + extractName(dir));
                     extractArchiveTo(dir.listFiles()[0], dest);
+                    check++;
 
                     // warning if no .java files are contained
                     if(FileHandler.recursiveSearch(dest, path -> path.getName().endsWith(".java")).isEmpty())
@@ -146,6 +156,7 @@ public class SubmissionSplitter {
                 }
             }
         }
+        return check;
     }
 
     public void zipSplit() {
@@ -199,10 +210,7 @@ public class SubmissionSplitter {
         String in = new Scanner(System.in).nextLine();
         if(in.equals("y")) {
             SubmissionSplitter splitter = new SubmissionSplitter(amountMap, SUBMISSIONS_PATH, OUTPUT_PATH);
-            int fileCount = splitter.splitRelative();
-            splitter.printSplit(fileCount);
-            splitter.splitFilesIntoFolder();
-            splitter.zipSplit();
+            splitter.doSplit();
         }
     }
 

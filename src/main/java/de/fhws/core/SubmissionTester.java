@@ -119,6 +119,7 @@ public class SubmissionTester {
                 java [-d] <file index> \t\t\t executes the given .java file; if -d then a no new cmd window will
                 \t\t\t\t\t\t\t\t\t be opened (needed for input), instead it's executed directly
                 check \t\t\t\t\t\t marks as checked
+                cmd \t\t\t\t\t\t starts the cmd window in the working directory
                 uncheck \t\t\t\t\t marks as unchecked
                 pass \t\t\t\t\t\t marks as passed
                 unpass \t\t\t\t\t\t marks as not passed
@@ -196,6 +197,10 @@ public class SubmissionTester {
                 System.out.println("number needed!");
                 return false;
             }
+        }
+        else if (command.startsWith("cmd")) {
+            startCmdInCheck();
+            return true;
         }
         else if(command.startsWith("check")) {
             setChecked(true);
@@ -361,6 +366,10 @@ public class SubmissionTester {
             }
         }
 
+    }
+
+    public void startCmdInCheck() {
+        executeCmdCommand(workingDir, "start cmd");
     }
 
     public static int executeCmdCommand(File dir, String command) {
