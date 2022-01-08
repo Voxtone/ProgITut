@@ -175,6 +175,7 @@ public class SubmissionTester {
             return true;
         }
         else if(command.startsWith("load")) {
+            System.out.println("package check;");
             load();
             return true;
         }
@@ -324,7 +325,9 @@ public class SubmissionTester {
         File currentDir = submissions.listFiles(path -> path.getName().contains(String.valueOf(matNum)))[0];
         List<File> javaFiles = FileHandler.recursiveSearch(currentDir, path -> path.getName().endsWith(".java"));
         for(File f : javaFiles) {
-            File dest = new File(workingDir + "/" + currentDir.toPath().relativize(f.toPath()).toString());
+            // old dest: path was relativized
+            //File dest = new File(workingDir + "/" + currentDir.toPath().relativize(f.toPath()).toString());
+            File dest = new File(workingDir + "/" + f.getName());
             loadedFiles.add(dest);
             FileHandler.createDirectory(dest.getParentFile());
             try {
@@ -426,7 +429,7 @@ public class SubmissionTester {
     }
 
     public static void main(String[] args) {
-        SubmissionTester tester = new SubmissionTester("files/split/" + NAME + "", "files/check");
+        SubmissionTester tester = new SubmissionTester("files/split/" + NAME + "", "C:\\Users\\david\\Desktop\\IdeaProjects\\ProgICheck\\src");
         //new Window(tester);
         tester.startDialog();
     }
