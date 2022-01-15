@@ -14,8 +14,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 
-// TODO delete package line in every .java file
-// TODO add Timer
 
 public class SubmissionTester {
 
@@ -331,6 +329,11 @@ public class SubmissionTester {
             loadedFiles.add(dest);
             FileHandler.createDirectory(dest.getParentFile());
             try {
+                int i = 2;
+                while(dest.exists()) {
+                    dest = new File(dest.getPath().replaceAll(".java", "(" + i + ").java"));
+                }
+
                 Files.copy(f.toPath(), dest.toPath(), StandardCopyOption.REPLACE_EXISTING);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -432,6 +435,11 @@ public class SubmissionTester {
         SubmissionTester tester = new SubmissionTester("files/split/" + NAME + "", "C:\\Users\\david\\Desktop\\IdeaProjects\\ProgICheck\\src");
         //new Window(tester);
         tester.startDialog();
+
+        // TODO IMPORTANT solve problem of duplicated class names
+
+        // TODO delete package line in every .java file
+        // TODO add Timer
     }
 
 
