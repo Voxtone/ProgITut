@@ -329,9 +329,9 @@ public class SubmissionTester {
             loadedFiles.add(dest);
             FileHandler.createDirectory(dest.getParentFile());
             try {
-                int i = 2;
+                int i = 1;
                 while(dest.exists()) {
-                    dest = new File(dest.getPath().replaceAll(".java", "(" + i + ").java"));
+                    dest = new File(dest.getPath().replaceAll(".java", "(" + ++i + ").java"));
                 }
 
                 Files.copy(f.toPath(), dest.toPath(), StandardCopyOption.REPLACE_EXISTING);
